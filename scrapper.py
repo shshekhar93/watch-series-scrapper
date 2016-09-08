@@ -6,12 +6,13 @@ from base64 import b64decode
 import requests
 import bs4
 import youtube_dl
+import utils
 
 def debug(txt):
 	print txt
 
 class Scrapper:
-	def __init__(self):
+	def __init__(self, opts):
 		self.url = ''
 		self.type = ''
 		self.host = ''
@@ -71,35 +72,20 @@ class Scrapper:
 			return
 
 		print "\nStarting download.."
-		try:
-			os.mkdir(self.seriesName)
-		except OSError:
-			debug('Folder exists.. continuing.') # What if it exists and its a file?
-
-		os.chdir(self.seriesName) # This might raise exception.
+		utils.mnchdir(self.seriesName) # This might raise exception.
 
 		seasonNames = self.allSeasons.keys()
 		seasonNames.sort()
 		for seasonName in seasonNames:
 			print '\nDownloading season', seasonName 
-			try:
-				os.mkdir('s' + str(seasonName))
-			except OSError:
-				debug('Folder exists.. continuing.')
-
-			os.chdir('s' + str(seasonName))
+			utils.mnchdir('s' + str(seasonName))
 
 			season = self.allSeasons[seasonName]
 			episodeNumbers = season.keys()
 			episodeNumbers.sort()
 			for episodeNumber in episodeNumbers:
 				print '\n\tDownloading episode', episodeNumber
-				try:
-					os.mkdir('e' + str(episodeNumber))
-				except OSError:
-					debug('Folder exists.. continuing.')
-
-				os.chdir('e' + str(episodeNumber))
+				utils.mnchdir('e' + str(episodeNumber))
 				self.downloadEpisode(season[episodeNumber])
 				os.chdir('../')
 
@@ -226,5 +212,6 @@ class Scrapper:
 		
 
 if __name__ == "__main__":
-	scrapper = Scrapper()
+	scrapper_opts = {}
+	scrapper = Scrapper(scrapper_opts)
 	scrapper.startDownload()
