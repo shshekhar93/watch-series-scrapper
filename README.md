@@ -4,7 +4,14 @@ Watch Series Scrapper is a commandline tool to download episodes of a series seq
 
 ### Installation
 
-Watch series scrapper requires python 2.7 to run. Clone this repo and execute the following command to download all episodes on the page.
+Watch series scrapper requires python 2.7 to run. Clone this repo and execute the following commands.
+
+To install the dependencies:
+```sh
+$ pip install -r requirements.txt
+```
+
+To download videos on a webpage
 ```sh
 $ python scrapper.py "URL of the page"
 ```
