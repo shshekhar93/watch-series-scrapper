@@ -1,4 +1,5 @@
 import sys
+import os
 from urlparse import urlparse
 from urlparse import parse_qs
 from base64 import b64decode
@@ -70,16 +71,39 @@ class Scrapper:
 			return
 
 		print "\nStarting download.."
+		try:
+			os.mkdir(self.seriesName)
+		except OSError:
+			debug('Folder exists.. continuing.') # What if it exists and its a file?
+
+		os.chdir(self.seriesName) # This might raise exception.
+
 		seasonNames = self.allSeasons.keys()
 		seasonNames.sort()
 		for seasonName in seasonNames:
 			print '\nDownloading season', seasonName 
+			try:
+				os.mkdir('s' + str(seasonName))
+			except OSError:
+				debug('Folder exists.. continuing.')
+
+			os.chdir('s' + str(seasonName))
+
 			season = self.allSeasons[seasonName]
 			episodeNumbers = season.keys()
 			episodeNumbers.sort()
 			for episodeNumber in episodeNumbers:
 				print '\n\tDownloading episode', episodeNumber
+				try:
+					os.mkdir('e' + str(episodeNumber))
+				except OSError:
+					debug('Folder exists.. continuing.')
+
+				os.chdir('e' + str(episodeNumber))
 				self.downloadEpisode(season[episodeNumber])
+				os.chdir('../')
+
+			os.chdir('../')
 
 	def downloadEpisode(self, url):
 		debug('\tDownloading episode page')
