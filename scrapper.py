@@ -24,10 +24,13 @@ class Scrapper:
 				self.type = 'season'
 			parsed_uri = urlparse(self.url)
 			self.host = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
+
+			self.seriesName, seasonNum, episodeNum = Scrapper.getEpisodeInfoFromPath(parsed_uri.path)
+			debug('series is ' + self.seriesName)
 			if self.type == 'season':
 				self.getSeasonPage()
 			else:
-				self.allSeasons = {0: {0: self.url}}
+				self.allSeasons = {seasonNum: {episodeNum: self.url}}
 
 	def getSeasonPage(self):
 		if self.url == '' or self.type == '':
@@ -179,6 +182,23 @@ class Scrapper:
 				pass
 			episodes[int(episodenumber)] = prefix + episodeUrl
 		return episodes
+
+	@staticmethod
+	def getEpisodeInfoFromPath(path):
+		filename = path[path.rfind('/') + 1:].lower()
+		seasonNum = 0
+		episodeNum = 0
+		try:
+			filename = filename[:filename.rindex('.')]
+			episodeInfo = filename[filename.rindex('_s') + 1 :]
+			filename = filename[:filename.rindex('_s')]
+			seasonNum = int(episodeInfo[1:episodeInfo.rindex('_e')])
+			episodeNum = int(episodeInfo[episodeInfo.rindex('_e') + 2 :])
+		except ValueError:
+			pass
+
+		seriesName = filename
+		return seriesName, seasonNum, episodeNum
 		
 
 if __name__ == "__main__":
