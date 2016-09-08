@@ -13,12 +13,15 @@ def debug(txt):
 
 class Scrapper:
 	def __init__(self, opts):
-		self.url = ''
+		print(opts)
+		self.url =  opts['url'].strip()
+		self.start = opts['start'].strip()
+		self.startSeason = opts['startSeason']
+		self.startEpisode = opts['startEpisode']
 		self.type = ''
 		self.host = ''
 		self.html = None
-		if len(sys.argv) > 1:
-			self.url = str(sys.argv[1]).strip()
+		if self.url != None and self.url != '':
 			try:
 				self.url.index('/episode/')
 				self.type = 'episode'
@@ -58,10 +61,18 @@ class Scrapper:
 		for seasonHtml in allSeasonsHtml:
 			seasonName = Scrapper.getNameFromHtml(seasonHtml)
 			if seasonName == None:
-				pass # This part has no season name. Go to next.
+				continue # This part has no season name. Go to next.
+
+			if seasonName < self.startSeason:
+				continue
+			elif seasonName == self.startSeason:
+				startEpisode = self.startEpisode
+			else:
+				startEpisode = 0
+
 
 			debug('Getting list of episodes in season ' + str(seasonName))
-			seasons[seasonName] = Scrapper.getEpisodeLinksFromHtml(seasonHtml, self.host)
+			seasons[seasonName] = Scrapper.getEpisodeLinksFromHtml(seasonHtml, self.host, startEpisode)
 			debug('Found ' + str(len(seasons[seasonName])) + ' episodes')
 
 		self.allSeasons = seasons
@@ -172,7 +183,7 @@ class Scrapper:
 		return int(seasonNameHtml[0].text.strip()[7:]) # Remove 'Season '
 
 	@staticmethod
-	def getEpisodeLinksFromHtml(html, prefix=None):
+	def getEpisodeLinksFromHtml(html, prefix=None, start=0):
 		if(prefix == None or type(prefix) != str):
 			prefix = ''
 
@@ -181,16 +192,19 @@ class Scrapper:
 		for htmlItem in htmlItems:
 			episodeNumberHtml = htmlItem.select('meta[itemprop="episodenumber"]')
 			try:
-				episodenumber = episodeNumberHtml[0]['content']
-			except IndexError, AttributeError:
-				pass
+				episodenumber = int(episodeNumberHtml[0]['content'])
+			except (IndexError, AttributeError, ValueError):
+				continue
+
+			if episodenumber < start:
+				continue
 
 			episodeUrlHtml = htmlItem.select('meta[itemprop="url"]')
 			try:
 				episodeUrl = episodeUrlHtml[0]['content']
 			except IndexError, AttributeError:
-				pass
-			episodes[int(episodenumber)] = prefix + episodeUrl
+				continue
+			episodes[episodenumber] = prefix + episodeUrl
 		return episodes
 
 	@staticmethod
@@ -212,6 +226,7 @@ class Scrapper:
 		
 
 if __name__ == "__main__":
-	scrapper_opts = {}
+	args = utils.parse_args()
+	scrapper_opts = vars(args)
 	scrapper = Scrapper(scrapper_opts)
 	scrapper.startDownload()
