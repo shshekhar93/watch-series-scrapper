@@ -24,9 +24,12 @@ class Scrapper:
 				self.type = 'season'
 			parsed_uri = urlparse(self.url)
 			self.host = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
-			self.getPage()
+			if self.type == 'season':
+				self.getSeasonPage()
+			else:
+				self.allSeasons = {0: {0: self.url}}
 
-	def getPage(self):
+	def getSeasonPage(self):
 		if self.url == '' or self.type == '':
 			return None
 
@@ -88,11 +91,12 @@ class Scrapper:
 		links = episodePageHtml.select('div[id="linktable"] a[class="buttonlink"]')
 		debug('\tEpisode page parsed')
 		for link in links:
-			ret = self.downloadEpisodeFromLink(self.host + link['href'])
-			if(ret == True):
-				return
-			else:
-				debug('\tThis Download link failed! Trying another.')
+			if link['title'].lower() != 'sponsored':
+				ret = self.downloadEpisodeFromLink(self.host + link['href'])
+				if(ret == True):
+					return
+				else:
+					debug('\tThis Download link failed! Trying another.')
 		print '\tFailed! None of the links worked.'
 		return 
 
