@@ -15,7 +15,7 @@ class Scrapper:
 	def __init__(self, opts):
 		print(opts)
 		self.url =  opts['url'].strip()
-		self.start = opts['start'].strip()
+		self.start = opts['start']
 		self.startSeason = opts['startSeason']
 		self.startEpisode = opts['startEpisode']
 		self.type = ''
@@ -204,7 +204,10 @@ class Scrapper:
 				episodeUrl = episodeUrlHtml[0]['content']
 			except IndexError, AttributeError:
 				continue
-			episodes[episodenumber] = prefix + episodeUrl
+			if episodeUrl.startswith(prefix):
+				episodes[episodenumber] = episodeUrl
+			else:
+				episodes[episodenumber] = prefix + episodeUrl
 		return episodes
 
 	@staticmethod
